@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portfolio — 资深全栈工程师</title>
+<meta name="description" content="Senior full-stack engineer specializing in immersive web experiences, scalable systems, and thoughtful design.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%237ab8cc'/%3E%3Ccircle cx='16' cy='14' r='5' fill='%23fff' opacity='.85'/%3E%3Cpath d='M10 22c0-3.3 2.7-6 6-6s6 2.7 6 6' fill='%23fff' opacity='.6'/%3E%3C/svg%3E">
+<style>
+  @font-face{
+    font-family:'Inter';
+    src:url('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjQ.woff2') format('woff2');
+    font-weight:200 700; font-style:normal; font-display:swap;
+  }
+
+  :root{
+    --ink:            #ffffff;
+    --ink-soft:       rgba(255,255,255,.68);
+    --ink-faint:      rgba(255,255,255,.40);
+    --rule:           rgba(255,255,255,.06);
+
+    --teal:           #7ab8cc;
+    --teal-light:     #a5d4e2;
+    --teal-dark:      #4a8fa6;
+    --teal-glow:      rgba(122,184,204,.15);
+
+    --bg:             #1a2a33;
+    --bg-card:        rgba(232,240,244,.06);
+    --bg-card-solid:  #e8f0f4;
+    --card-ink:       #1a2e38;
+    --card-label:     #6b8a96;
+
+    --ease:           cubic-bezier(.22,.61,.36,1);
+    --ease-out:       cubic-bezier(.16,1,.3,1);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+  html{
+    background:var(--bg);
+    scroll-behavior:smooth;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(122,184,204,.3) transparent;
+  }
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-weight:300;
+    color:var(--ink);
+    background:var(--bg);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── Three.js canvas (fixed, full viewport) ───────────────────────── */
+  #scene{
+    position:fixed; inset:0; z-index:0;
+    width:100vw; height:100vh;
+    pointer-events:none;
+  }
+
+  /* ── Content layer (scrolls over canvas) ──────────────────────────── */
+  .content{
+    position:relative; z-index:1;
+    pointer-events:none;
+  }
+  .content a,
+  .content button,
+  .content .dock-wrap,
+  .content .contact-form{ pointer-events:auto; }
+
+  /* ── Dock navigation ──────────────────────────────────────────────── */
+  .dock-wrap{
+    position:fixed; z-index:10;
+    top:28px; left:0; right:0;
+    display:flex; justify-content:center;
+    pointer-events:none;
+    opacity:0;
+    transform:translateY(-20px);
+    transition:opacity .6s var(--ease) .3s, transform .6s var(--ease) .3s;
+  }
+  .is-loaded .dock-wrap{ opacity:1; transform:none; }
+  .dock{
+    pointer-events:auto;
+    display:flex; align-items:center; gap:4px;
+    padding:6px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(26,42,51,.82);
+    box-shadow:0 8px 32px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.05);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    position:relative;
+  }
+  .dock::after{
+    content:''; position:absolute; inset:-1px; z-index:5;
+    padding:1px; border-radius:inherit; pointer-events:none;
+    opacity:var(--spec-bright, 0);
+    background:conic-gradient(from var(--spec-angle, 2.4rad) at 50% 50%,
+      rgba(165,212,226,0) 0deg, rgba(165,212,226,.08) 14deg, rgba(165,212,226,.85) 28deg,
+      rgba(165,212,226,.12) 46deg, rgba(165,212,226,0) 68deg, rgba(165,212,226,0) 180deg,
+      rgba(165,212,226,.08) 194deg, rgba(165,212,226,.85) 208deg, rgba(165,212,226,.12) 226deg,
+      rgba(165,212,226,0) 248deg, rgba(165,212,226,0) 360deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+  }
+  .dock-item{
+    display:inline-flex; align-items:center; gap:8px;
+    height:38px; padding:0 14px;
+    border:1px solid transparent; border-radius:11px;
+    background:rgba(255,255,255,.03);
+    color:var(--ink-faint);
+    text-decoration:none; cursor:pointer;
+    font-family:inherit; font-size:12px; font-weight:500;
+    letter-spacing:1.2px; text-transform:uppercase;
+    white-space:nowrap;
+    transition:all .2s var(--ease);
+    will-change:transform,width,height;
+  }
+  .dock-item:hover,
+  .dock-item[data-near="true"]{
+    color:var(--ink);
+    background:rgba(26,42,51,.95);
+    border-color:rgba(255,255,255,.15);
+    box-shadow:0 6px 18px rgba(0,0,0,.3);
+  }
+  .dock-item.is-active{
+    background:var(--teal); border-color:var(--teal); color:#fff;
+  }
+  .dock-mark{
+    width:38px; padding:0; justify-content:center;
+    background:var(--teal); border-color:var(--teal); color:#fff;
+  }
+  .dock-mark svg{ width:18px; height:18px; display:block; fill:currentColor; }
+  .dock-mark[data-near="true"]{ background:var(--teal-light); border-color:var(--teal-light); color:var(--bg); }
+  .dock-item .ico{ width:14px; height:14px; flex:none; opacity:.65; }
+  .dock-item .ico svg{ width:100%; height:100%; fill:none; stroke:currentColor; stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
+  .dock-item[data-near="true"] .ico,
+  .dock-item:hover .ico{ opacity:1; }
+
+  /* ── Sections (scrollable content) ────────────────────────────────── */
+  .section{
+    min-height:100vh;
+    display:flex; align-items:center;
+    padding:120px 0;
+    position:relative;
+  }
+  .section-inner{
+    width:100%; max-width:1100px;
+    margin:0 auto;
+    padding:0 48px;
+  }
+
+  /* ── Hero section ─────────────────────────────────────────────────── */
+  .hero{
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .hero-content{
+    text-align:center;
+    max-width:700px;
+    padding:0 24px;
+  }
+  .hero-label{
+    font-size:13px; font-weight:500; letter-spacing:3px;
+    text-transform:uppercase; color:var(--teal);
+    margin-bottom:20px;
+    opacity:0; transform:translateY(16px);
+    transition:opacity .8s var(--ease) .4s, transform .8s var(--ease) .4s;
+  }
+  .is-loaded .hero-label{ opacity:1; transform:none; }
+  .hero-name{
+    font-size:clamp(48px, 8vw, 80px); line-height:1.05;
+    font-weight:200; letter-spacing:-1px;
+    margin-bottom:20px;
+    opacity:0; transform:translateY(20px);
+    transition:opacity .9s var(--ease) .55s, transform .9s var(--ease) .55s;
+  }
+  .is-loaded .hero-name{ opacity:1; transform:none; }
+  .hero-role{
+    font-size:clamp(16px, 2.2vw, 20px); line-height:1.6;
+    font-weight:300; color:var(--ink-soft);
+    max-width:480px; margin:0 auto 40px;
+    opacity:0; transform:translateY(16px);
+    transition:opacity .8s var(--ease) .7s, transform .8s var(--ease) .7s;
+  }
+  .is-loaded .hero-role{ opacity:1; transform:none; }
+  .hero-cta{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:14px 32px;
+    border:1px solid rgba(122,184,204,.4); border-radius:40px;
+    background:rgba(122,184,204,.08);
+    color:var(--teal-light); font-size:14px; font-weight:400;
+    letter-spacing:.5px; text-decoration:none;
+    cursor:pointer;
+    transition:all .3s var(--ease);
+    opacity:0; transform:translateY(14px);
+  }
+  .is-loaded .hero-cta{ opacity:1; transform:none; transition:opacity .8s var(--ease) .85s, transform .8s var(--ease) .85s, background .3s var(--ease), border-color .3s var(--ease); }
+  .hero-cta:hover{ background:rgba(122,184,204,.18); border-color:var(--teal); }
+  .hero-cta svg{ width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+
+  .scroll-cue{
+    position:absolute; bottom:40px; left:50%;
+    transform:translateX(-50%);
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    color:var(--ink-faint); font-size:10px; letter-spacing:3px; text-transform:uppercase;
+    opacity:0; transition:opacity .8s var(--ease) 1.2s;
+  }
+  .is-loaded .scroll-cue{ opacity:1; }
+  .scroll-cue .line{ width:1px; height:40px; background:rgba(255,255,255,.12); overflow:hidden; position:relative; }
+  .scroll-cue .line::after{
+    content:''; position:absolute; top:0; left:0; width:100%; height:40%;
+    background:var(--teal);
+    animation:scroll-pulse 2.2s var(--ease) infinite;
+  }
+  @keyframes scroll-pulse{
+    0%{ transform:translateY(-100%); opacity:0; }
+    30%{ opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform:translateY(250%); opacity:0; }
+  }
+
+  /* ── About section ────────────────────────────────────────────────── */
+  .about-grid{
+    display:grid; grid-template-columns:280px 1fr; gap:60px; align-items:center;
+  }
+  .about-avatar{
+    width:280px; height:280px;
+    border-radius:40px; overflow:hidden;
+    background:linear-gradient(135deg, var(--teal-dark), var(--bg));
+    position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .about-avatar-inner{
+    position:absolute; inset:3px;
+    border-radius:38px; overflow:hidden;
+    background:var(--bg);
+    display:grid; place-items:center;
+  }
+  .about-avatar-inner .placeholder-art{
+    width:100%; height:100%;
+    background:
+      radial-gradient(circle at 40% 35%, var(--teal-glow), transparent 60%),
+      radial-gradient(circle at 70% 70%, rgba(122,184,204,.08), transparent 50%),
+      var(--bg);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .about-avatar-inner .placeholder-art svg{
+    width:120px; height:120px; opacity:.25;
+  }
+  .about-text h2{
+    font-size:36px; line-height:1.2; font-weight:200;
+    margin-bottom:20px;
+    letter-spacing:-.5px;
+  }
+  .about-text h2 span{ color:var(--teal); }
+  .about-text p{
+    font-size:15px; line-height:1.8; color:var(--ink-soft);
+    margin-bottom:16px;
+  }
+  .about-stats{
+    display:flex; gap:40px; margin-top:32px;
+    padding-top:28px; border-top:1px solid var(--rule);
+  }
+  .about-stats dt{ font-size:12px; color:var(--ink-faint); letter-spacing:1px; text-transform:uppercase; }
+  .about-stats dd{ font-size:28px; font-weight:200; color:var(--teal-light); margin-top:4px; }
+
+  /* ── Section headers ──────────────────────────────────────────────── */
+  .section-header{
+    margin-bottom:48px;
+  }
+  .section-header .label{
+    font-size:12px; font-weight:500; letter-spacing:3px;
+    text-transform:uppercase; color:var(--teal); margin-bottom:12px;
+  }
+  .section-header h2{
+    font-size:clamp(32px, 4vw, 44px); font-weight:200;
+    letter-spacing:-.5px; line-height:1.15;
+  }
+
+  /* ── Skills grid ──────────────────────────────────────────────────── */
+  .skills-grid{
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:20px;
+  }
+  .skill-card{
+    padding:32px;
+    border-radius:24px;
+    border:1px solid rgba(255,255,255,.06);
+    background:var(--bg-card);
+    backdrop-filter:blur(8px);
+    transition:all .4s var(--ease);
+    position:relative; overflow:hidden;
+  }
+  .skill-card::before{
+    content:''; position:absolute; top:0; left:0; right:0; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(122,184,204,.2), transparent);
+    opacity:0; transition:opacity .4s var(--ease);
+  }
+  .skill-card:hover{ border-color:rgba(122,184,204,.2); transform:translateY(-3px); }
+  .skill-card:hover::before{ opacity:1; }
+  .skill-icon{
+    width:44px; height:44px;
+    background:linear-gradient(135deg, var(--teal), var(--teal-dark));
+    border-radius:13px;
+    display:grid; place-items:center;
+    margin-bottom:18px;
+    box-shadow:0 6px 20px rgba(74,143,166,.25);
+  }
+  .skill-icon svg{
+    width:22px; height:22px; fill:none; stroke:#fff;
+    stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round;
+  }
+  .skill-card h3{
+    font-size:17px; font-weight:500; margin-bottom:10px;
+  }
+  .skill-card p{
+    font-size:13.5px; line-height:1.7; color:var(--ink-soft);
+  }
+  .skill-tags{
+    display:flex; flex-wrap:wrap; gap:6px; margin-top:14px;
+  }
+  .skill-tags span{
+    font-size:11px; padding:4px 10px;
+    border-radius:6px; background:rgba(122,184,204,.08);
+    color:var(--teal-light); letter-spacing:.3px;
+  }
+
+  /* ── Work / Projects grid ─────────────────────────────────────────── */
+  .work-grid{
+    display:grid; grid-template-columns:repeat(3, 1fr); gap:20px;
+  }
+  .work-card{
+    aspect-ratio:4/3;
+    border-radius:24px;
+    border:1px dashed rgba(122,184,204,.15);
+    background:rgba(122,184,204,.02);
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:12px;
+    transition:all .4s var(--ease);
+    position:relative; overflow:hidden;
+    cursor:pointer;
+  }
+  .work-card::before{
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(122,184,204,.06), transparent 60%),
+      radial-gradient(circle at 80% 70%, rgba(122,184,204,.04), transparent 50%);
+    opacity:0; transition:opacity .4s var(--ease);
+  }
+  .work-card:hover{ border-color:rgba(122,184,204,.3); background:rgba(122,184,204,.04); transform:translateY(-3px); }
+  .work-card:hover::before{ opacity:1; }
+  .work-card .icon{
+    width:48px; height:48px;
+    border:1.5px dashed rgba(122,184,204,.25); border-radius:14px;
+    display:grid; place-items:center;
+    color:var(--teal-faint, rgba(122,184,204,.3));
+    transition:all .3s var(--ease);
+  }
+  .work-card:hover .icon{ border-color:var(--teal); color:var(--teal); }
+  .work-card .icon svg{ width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.3; stroke-linecap:round; }
+  .work-card .placeholder-text{
+    font-size:13px; color:var(--ink-faint); letter-spacing:.5px;
+    text-align:center;
+  }
+  .work-card .coming{
+    font-size:10px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--teal); opacity:.5;
+    position:absolute; bottom:20px;
+  }
+  /* Each empty card gets a unique geometric accent */
+  .work-card:nth-child(1) .geo-accent{
+    position:absolute; top:-20px; right:-20px;
+    width:100px; height:100px; border-radius:50%;
+    border:1px solid rgba(122,184,204,.08);
+  }
+  .work-card:nth-child(2) .geo-accent{
+    position:absolute; bottom:-30px; left:-30px;
+    width:120px; height:120px;
+    border:1px solid rgba(122,184,204,.06);
+    transform:rotate(45deg);
+  }
+  .work-card:nth-child(3) .geo-accent{
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    width:160px; height:160px; border-radius:50%;
+    border:1px dashed rgba(122,184,204,.05);
+  }
+
+  /* ── Blog section ─────────────────────────────────────────────────── */
+  .blog-list{ display:flex; flex-direction:column; gap:0; }
+  .blog-entry{
+    display:grid; grid-template-columns:120px 1fr; gap:32px;
+    padding:28px 0;
+    border-bottom:1px solid var(--rule);
+    transition:all .3s var(--ease);
+    cursor:pointer;
+    text-decoration:none; color:inherit;
+  }
+  .blog-entry:first-child{ border-top:1px solid var(--rule); }
+  .blog-entry:hover{ padding-left:8px; }
+  .blog-date{
+    font-size:13px; color:var(--ink-faint); padding-top:2px;
+    font-variant-numeric:tabular-nums;
+  }
+  .blog-body h3{
+    font-size:17px; font-weight:400; margin-bottom:6px;
+    transition:color .2s var(--ease);
+  }
+  .blog-entry:hover .blog-body h3{ color:var(--teal-light); }
+  .blog-body p{
+    font-size:13.5px; line-height:1.7; color:var(--ink-soft);
+  }
+  .blog-tag{
+    display:inline-block; font-size:10px; letter-spacing:1px;
+    text-transform:uppercase; color:var(--teal);
+    margin-top:8px;
+  }
+
+  /* ── Contact section ──────────────────────────────────────────────── */
+  .contact-area{
+    text-align:center;
+    max-width:500px; margin:0 auto;
+  }
+  .contact-area h2{
+    font-size:clamp(36px, 5vw, 52px); font-weight:200;
+    margin-bottom:20px; letter-spacing:-.5px;
+  }
+  .contact-area p{
+    font-size:15px; line-height:1.7; color:var(--ink-soft);
+    margin-bottom:36px;
+  }
+  .contact-email{
+    display:inline-flex; align-items:center; gap:12px;
+    font-size:clamp(16px, 2.5vw, 22px); font-weight:300;
+    color:var(--teal-light); text-decoration:none;
+    padding:16px 36px;
+    border:1px solid rgba(122,184,204,.25); border-radius:50px;
+    background:rgba(122,184,204,.05);
+    transition:all .3s var(--ease);
+  }
+  .contact-email:hover{
+    background:rgba(122,184,204,.15); border-color:var(--teal);
+    box-shadow:0 8px 30px rgba(122,184,204,.15);
+  }
+  .contact-email svg{ width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; }
+  .social-row{
+    display:flex; justify-content:center; gap:16px;
+    margin-top:32px;
+  }
+  .social-row a{
+    width:44px; height:44px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.03);
+    display:grid; place-items:center;
+    color:var(--ink-faint); text-decoration:none;
+    transition:all .25s var(--ease);
+  }
+  .social-row a:hover{
+    background:var(--teal); border-color:var(--teal); color:#fff;
+    transform:translateY(-3px);
+    box-shadow:0 8px 20px rgba(74,143,166,.3);
+  }
+  .social-row a svg{ width:18px; height:18px; fill:currentColor; }
+
+  /* ── Footer ───────────────────────────────────────────────────────── */
+  .footer{
+    text-align:center; padding:40px 0 60px;
+    font-size:12px; color:var(--ink-faint); letter-spacing:.5px;
+  }
+
+  /* ── Entrance animations ──────────────────────────────────────────── */
+  .reveal{
+    opacity:0; transform:translateY(30px);
+    transition:opacity .7s var(--ease), transform .7s var(--ease-out);
+  }
+  .reveal.is-visible{ opacity:1; transform:none; }
+  .reveal-d1{ transition-delay:.1s; }
+  .reveal-d2{ transition-delay:.2s; }
+  .reveal-d3{ transition-delay:.3s; }
+  .reveal-d4{ transition-delay:.4s; }
+
+  /* ── Responsive ───────────────────────────────────────────────────── */
+  @media(max-width:900px){
+    .dock-item span:not(.ico){ display:none; }
+    .dock-item{ width:42px; padding:0; justify-content:center; }
+    .dock{ gap:3px; padding:5px; }
+    .section-inner{ padding:0 24px; }
+    .about-grid{ grid-template-columns:1fr; gap:32px; }
+    .about-avatar{ width:200px; height:200px; margin:0 auto; }
+    .skills-grid{ grid-template-columns:1fr; }
+    .work-grid{ grid-template-columns:1fr; }
+    .blog-entry{ grid-template-columns:1fr; gap:8px; }
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .hero-label,.hero-name,.hero-role,.hero-cta,.scroll-cue{ opacity:1; transform:none; transition:none; }
+    .dock-wrap{ opacity:1; transform:none; transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="scene"></canvas>
+
+<div class="content">
+  <!-- Dock Navigation -->
+  <div class="dock-wrap">
+    <nav class="dock" id="dock" aria-label="Primary">
+      <a class="dock-item dock-mark" data-dock data-spec href="#hero" aria-label="Home">
+        <svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" opacity=".3"/><circle cx="16" cy="16" r="5"/></svg>
+      </a>
+      <a class="dock-item is-active" data-dock data-spec href="#about">
+        <span class="ico"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg></span>
+        <span>关于</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="#skills">
+        <span class="ico"><svg viewBox="0 0 16 16"><path d="M8 1.5l2 4.5 4.5.8-3.3 3 .8 4.7L8 12.3 3.9 14.5l.8-4.7L1.5 6.8 6 6.3z"/></svg></span>
+        <span>技能</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="#work">
+        <span class="ico"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 6h4M6 9h2.5"/></svg></span>
+        <span>作品</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="#blog">
+        <span class="ico"><svg viewBox="0 0 16 16"><path d="M4 2.4h5.3L12 5.1v8.5H4z"/><path d="M9.2 2.4V5h2.7"/><path d="M6 8.4h4M6 10.8h2.8"/></svg></span>
+        <span>博客</span>
+      </a>
+      <a class="dock-item" data-dock data-spec href="#contact">
+        <span class="ico"><svg viewBox="0 0 16 16"><path d="M2 4h12v8H2z"/><path d="M2 4l6 5 6-5"/></svg></span>
+        <span>联系</span>
+      </a>
+      <button class="dock-item" id="lang-toggle" style="pointer-events:auto;cursor:pointer;font-size:13px;letter-spacing:0;" title="切换语言">
+        <span>EN</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <p class="hero-label" data-i18n="hero.label">你好，我是</p>
+      <h1 class="hero-name" data-i18n="hero.name">陈维</h1>
+      <p class="hero-role" data-i18n="hero.role">资深全栈工程师，专注于构建沉浸式数字体验。六年经验，打造用户真正喜欢的产品。</p>
+      <a class="hero-cta" href="#work">
+        <span data-i18n="hero.cta">查看作品</span>
+        <svg viewBox="0 0 24 24"><path d="M7 17l9.2-9.2M7 7h10v10"/></svg>
+      </a>
+    </div>
+    <div class="scroll-cue">
+      <span data-i18n="hero.scroll">Scroll</span>
+      <div class="line"></div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <div class="about-grid">
+        <div class="about-avatar reveal">
+          <div class="about-avatar-inner">
+            <img src="avatar.jpg" alt="Chen Wei" style="width:100%;height:100%;object-fit:cover;display:block;">
+          </div>
+        </div>
+        <div class="about-text">
+          <div class="section-header reveal">
+            <p class="label" data-i18n="about.label">关于我</p>
+            <h2 data-i18n="about.title">我做的东西，<span>会呼吸</span>。</h2>
+          </div>
+          <p class="reveal reveal-d1" data-i18n="about.p1">31 岁，坐标深圳，全栈工程师。我专注于构建兼具技术严谨与工艺美感的 Web 应用——每一个像素、每一帧动画、每一次 API 响应，都应该是有意为之。</p>
+          <p class="reveal reveal-d2" data-i18n="about.p2">过去六年，我在金融科技、电商和创意工具领域交付了多个产品。我关心性能、可访问性，以及那些区分「能用」和「好用」的微小细节。</p>
+          <p class="reveal reveal-d2" data-i18n="about.p3">不写代码的时候，大概在画 UI 草图、折腾 WebGL，或者手冲一杯咖啡。</p>
+          <dl class="about-stats reveal reveal-d3">
+            <div><dt data-i18n="about.stat1.label">工作经验</dt><dd>6+年</dd></div>
+            <div><dt data-i18n="about.stat2.label">交付项目</dt><dd>40+</dd></div>
+            <div><dt data-i18n="about.stat3.label">每日咖啡</dt><dd>3杯</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills -->
+  <section class="section" id="skills">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <p class="label" data-i18n="skills.label">技能</p>
+        <h2 data-i18n="skills.title">我能带来什么。</h2>
+      </div>
+      <div class="skills-grid">
+        <div class="skill-card reveal reveal-d1">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3 data-i18n="skills.fe.title">前端工程</h3>
+          <p data-i18n="skills.fe.desc">像素级精准的界面实现，精通性能优化、动画系统与无障碍访问。用现代框架构建流畅的用户体验。</p>
+          <div class="skill-tags">
+            <span>React</span><span>Vue</span><span>TypeScript</span><span>Three.js</span><span>WebGL</span><span>CSS Architecture</span>
+          </div>
+        </div>
+        <div class="skill-card reveal reveal-d2">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <h3 data-i18n="skills.be.title">后端与系统</h3>
+          <p data-i18n="skills.be.desc">可扩展的 API、微服务架构与数据管道。我设计能扛住真实流量的系统，从容不迫。</p>
+          <div class="skill-tags">
+            <span>Node.js</span><span>Go</span><span>Python</span><span>PostgreSQL</span><span>Redis</span><span>GraphQL</span>
+          </div>
+        </div>
+        <div class="skill-card reveal reveal-d2">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          </div>
+          <h3 data-i18n="skills.devops.title">DevOps & 云</h3>
+          <p data-i18n="skills.devops.desc">CI/CD 流水线、容器编排与基础设施即代码。快速、可靠地交付。</p>
+          <div class="skill-tags">
+            <span>Docker</span><span>K8s</span><span>AWS</span><span>Terraform</span><span>GitHub Actions</span>
+          </div>
+        </div>
+        <div class="skill-card reveal reveal-d3">
+          <div class="skill-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+          </div>
+          <h3 data-i18n="skills.design.title">设计 & UX</h3>
+          <p data-i18n="skills.design.desc">连接设计与工程的桥梁。用系统思维思考，用代码原型验证，执着于交互之间的每一个瞬间。</p>
+          <div class="skill-tags">
+            <span>Figma</span><span>Motion Design</span><span>Design Systems</span><span>User Research</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section class="section" id="work">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <p class="label" data-i18n="work.label">精选作品</p>
+        <h2 data-i18n="work.title">项目展示。</h2>
+      </div>
+      <div class="work-grid">
+        <div class="work-card reveal reveal-d1">
+          <div class="geo-accent"></div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+          <p class="placeholder-text" data-i18n="work.card1">下一个项目<br>即将上线…</p>
+          <span class="coming" data-i18n="work.coming">即将呈现</span>
+        </div>
+        <div class="work-card reveal reveal-d2">
+          <div class="geo-accent"></div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+          <p class="placeholder-text" data-i18n="work.card2">正在酝酿<br>一些有趣的东西</p>
+          <span class="coming" data-i18n="work.coming">即将呈现</span>
+        </div>
+        <div class="work-card reveal reveal-d3">
+          <div class="geo-accent"></div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
+          <p class="placeholder-text" data-i18n="work.card3">敬请<br>期待</p>
+          <span class="coming" data-i18n="work.coming">即将呈现</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Blog -->
+  <section class="section" id="blog">
+    <div class="section-inner">
+      <div class="section-header reveal">
+        <p class="label" data-i18n="blog.label">博客</p>
+        <h2 data-i18n="blog.title">思考与记录。</h2>
+      </div>
+      <div class="blog-list">
+        <a class="blog-entry reveal reveal-d1" href="#">
+          <span class="blog-date">2026.08.15</span>
+          <div class="blog-body">
+            <h3 data-i18n="blog.post1.title">我为什么用三周重写了整个前端</h3>
+            <p data-i18n="blog.post1.desc">一个关于技术债、果断决策和性能提升的故事。以及那份说服管理层的 Excel 表格。</p>
+            <span class="blog-tag" data-i18n="blog.post1.tag">工程</span>
+          </div>
+        </a>
+        <a class="blog-entry reveal reveal-d2" href="#">
+          <span class="blog-date">2026.07.28</span>
+          <div class="blog-body">
+            <h3 data-i18n="blog.post2.title">有意义的动画：让界面活起来的艺术</h3>
+            <p data-i18n="blog.post2.desc">不是所有动画都生而平等。如何用运动引导注意力、传递状态、让界面有人味——同时不让人头晕。</p>
+            <span class="blog-tag" data-i18n="blog.post2.tag">设计</span>
+          </div>
+        </a>
+        <a class="blog-entry reveal reveal-d3" href="#">
+          <span class="blog-date">2026.06.10</span>
+          <div class="blog-body">
+            <h3 data-i18n="blog.post3.title">构建实时协作引擎</h3>
+            <p data-i18n="blog.post3.desc">CRDT、Operational Transform，以及让多个光标和谐共处的混乱现实。我们从零构建中学到了什么。</p>
+            <span class="blog-tag" data-i18n="blog.post3.tag">系统</span>
+          </div>
+        </a>
+        <a class="blog-entry reveal reveal-d4" href="#">
+          <span class="blog-date">2026.05.02</span>
+          <div class="blog-body">
+            <h3 data-i18n="blog.post4.title">手冲咖啡与代码审查</h3>
+            <p data-i18n="blog.post4.desc">做咖啡教会我的事：耐心、流程、关注细节。一个略显矫情但确实成立的类比。</p>
+            <span class="blog-tag" data-i18n="blog.post4.tag">生活</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section" id="contact">
+    <div class="section-inner">
+      <div class="contact-area">
+        <div class="section-header reveal">
+          <p class="label">Contact</p>
+        </div>
+        <h2 class="reveal reveal-d1" data-i18n="contact.title">一起做点<br>有意思的事。</h2>
+        <p class="reveal reveal-d2" data-i18n="contact.desc">我对有趣的对话、合作机会始终敞开大门。或者，一边喝咖啡一边聊聊 Web 性能优化也行。</p>
+        <a class="contact-email reveal reveal-d3" href="mailto:whoayou@agent.qq.com">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg>
+          whoayou@agent.qq.com
+        </a>
+        <div class="social-row reveal reveal-d4">
+          <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg></a>
+          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p data-i18n="footer"><a href="https://github.com/znuaibot/portfolio" style="color:inherit;text-decoration:none;">© 2026 陈维</a> · 用 Three.js 精心构建</p>
+  </footer>
+</div>
+
+<script src="three.min.js"></script>
+<script>
+/* ====================================================================== *
+ * Full-Page 3D Immersive Portfolio
+ *
+ * Architecture:
+ *   - Three.js canvas fixed behind the viewport
+ *   - HTML content scrolls naturally on top
+ *   - Scroll position drives camera path + scene transitions
+ *   - Five zone groups: Hero, About, Skills, Work, Blog
+ *   - Custom GLSL shaders for soft teal materials
+ *   - Dock navigation with proximity magnification
+ *   - IntersectionObserver for reveal animations
+ * ====================================================================== */
+(function(){
+'use strict';
+
+var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Palette ──────────────────────────────────────────────────────────── */
+var TEAL       = new (window.THREE || {}).Color(0.478, 0.722, 0.800);
+var TEAL_LIGHT = new THREE.Color(0.647, 0.831, 0.886);
+var TEAL_DARK  = new THREE.Color(0.290, 0.561, 0.651);
+var BG_DARK    = new THREE.Color(0.102, 0.165, 0.200);
+
+/* ── Deterministic noise ──────────────────────────────────────────────── */
+var rng = (function(){
+  var a = 0x5f9a1c7b;
+  return function(){
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    var t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+})();
+function rand(lo,hi){ return lo + (hi-lo) * rng(); }
+var TAU = Math.PI * 2;
+
+/* ── Setup ────────────────────────────────────────────────────────────── */
+var canvas = document.getElementById('scene');
+var renderer, scene, camera;
+var uTime = { value: 0 };
+var uScroll = { value: 0 };
+var uZoneBlend = { value: [1,0,0,0,0] };
+var clock = null;
+var W, H;
+
+/* Zone camera positions: [x, y, z] */
+var ZONES = [
+  { pos: [0, 0, 1400],    look: [0, 0, 0] },     // Hero
+  { pos: [-300, -50, 900], look: [-100, 0, 0] },  // About
+  { pos: [250, 80, 700],   look: [100, 30, 0] },  // Skills
+  { pos: [0, 120, 500],    look: [0, 60, 0] },    // Work
+  { pos: [-100, -30, 600],  look: [0, -20, 0] },  // Blog/Contact
+];
+
+function build(){
+  var small = window.innerWidth < 900 || (window.innerWidth * window.innerHeight) < 620000;
+
+  renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: !small });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2));
+
+  scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0x1a2a33, 0.0004);
+
+  camera = new THREE.PerspectiveCamera(40, 1, 10, 8000);
+  camera.position.set(0, 0, 1400);
+
+  buildZone0_Hero(small);
+  buildZone1_About(small);
+  buildZone2_Skills(small);
+  buildZone3_Work(small);
+  buildZone4_Blog(small);
+  buildParticles(small);
+  buildLighting();
+
+  layout();
+  window.addEventListener('resize', layout);
+  clock = new THREE.Clock();
+
+  /* Scroll tracking */
+  var lastScroll = 0;
+  window.addEventListener('scroll', function(){
+    lastScroll = window.scrollY;
+  }, { passive: true });
+
+  /* Update uScroll from actual scroll position each frame */
+  function updateScroll(){
+    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    uScroll.value = maxScroll > 0 ? lastScroll / maxScroll : 0;
+    requestAnimationFrame(updateScroll);
+  }
+  updateScroll();
+
+  /* Mark loaded */
+  setTimeout(function(){ document.body.classList.add('is-loaded'); }, 100);
+
+  /* Start render loop */
+  (function loop(){ requestAnimationFrame(loop); renderFrame(); })();
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+function layout(){
+  W = window.innerWidth; H = window.innerHeight;
+  if(!W || !H) return;
+  renderer.setSize(W, H);
+  camera.aspect = W / H;
+  camera.updateProjectionMatrix();
+}
+
+/* ── Zone 0: Hero — floating soft crystals ────────────────────────────── */
+function buildZone0_Hero(small){
+  var group = new THREE.Group();
+  group.name = 'zone0';
+
+  // Central cluster of soft rounded crystals
+  for(var i = 0; i < (small ? 6 : 12); i++){
+    var geo = new THREE.IcosahedronGeometry(rand(30, 80), 2);
+    // Deform vertices for organic feel
+    var pos = geo.attributes.position;
+    for(var v = 0; v < pos.count; v++){
+      var x = pos.getX(v), y = pos.getY(v), z = pos.getZ(v);
+      var noise = Math.sin(x * 0.03) * Math.cos(y * 0.04) * 15;
+      pos.setXYZ(v, x + noise * 0.3, y + noise * 0.2, z + noise * 0.25);
+    }
+    geo.computeVertexNormals();
+
+    var mat = softGlowMaterial(0.35 + rng() * 0.25);
+    var mesh = new THREE.Mesh(geo, mat);
+    var angle = (i / 12) * TAU + rand(-0.4, 0.4);
+    var dist = rand(100, 450);
+    mesh.position.set(Math.cos(angle) * dist, rand(-150, 200), Math.sin(angle) * dist - 200);
+    mesh.rotation.set(rand(0, TAU), rand(0, TAU), 0);
+    mesh.userData.phase = rng() * TAU;
+    mesh.userData.speed = rand(0.3, 0.8);
+    mesh.userData.baseY = mesh.position.y;
+    group.add(mesh);
+  }
+
+  // Torus rings
+  for(var r = 0; r < (small ? 2 : 4); r++){
+    var torusGeo = new THREE.TorusGeometry(rand(50, 120), rand(2, 5), 12, 48);
+    var torusMat = ringShaderMaterial();
+    var torus = new THREE.Mesh(torusGeo, torusMat);
+    torus.position.set(rand(-300, 300), rand(-100, 150), rand(-400, -100));
+    torus.rotation.set(rand(0, Math.PI), rand(0, TAU), 0);
+    torus.userData.phase = rng() * TAU;
+    group.add(torus);
+  }
+
+  scene.add(group);
+}
+
+/* ── Zone 1: About — wireframe sphere ─────────────────────────────────── */
+function buildZone1_About(small){
+  var group = new THREE.Group();
+  group.name = 'zone1';
+  group.position.set(-100, 0, 0);
+
+  // Wireframe sphere
+  var sphereGeo = new THREE.IcosahedronGeometry(120, 2);
+  var wireMat = new THREE.MeshBasicMaterial({
+    color: TEAL, wireframe: true, transparent: true, opacity: 0.12
+  });
+  var sphere = new THREE.Mesh(sphereGeo, wireMat);
+  sphere.userData.rotSpeed = 0.15;
+  group.add(sphere);
+
+  // Inner glow sphere
+  var innerGeo = new THREE.IcosahedronGeometry(80, 3);
+  var innerMat = softGlowMaterial(0.08);
+  var inner = new THREE.Mesh(innerGeo, innerMat);
+  group.add(inner);
+
+  // Orbiting dots
+  if(!small){
+    for(var i = 0; i < 20; i++){
+      var dotGeo = new THREE.SphereGeometry(rand(1.5, 3), 8, 8);
+      var dotMat = new THREE.MeshBasicMaterial({ color: TEAL_LIGHT, transparent: true, opacity: 0.4 });
+      var dot = new THREE.Mesh(dotGeo, dotMat);
+      var theta = rand(0, TAU), phi = rand(0, Math.PI);
+      var r = rand(100, 150);
+      dot.position.set(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
+      dot.userData.orbit = { theta: theta, phi: phi, r: r, speed: rand(0.1, 0.3) };
+      group.add(dot);
+    }
+  }
+
+  scene.add(group);
+}
+
+/* ── Zone 2: Skills — four orbiting nodes ─────────────────────────────── */
+function buildZone2_Skills(small){
+  var group = new THREE.Group();
+  group.name = 'zone2';
+  group.position.set(100, 30, 0);
+
+  var colors = [0x7ab8cc, 0xa5d4e2, 0x4a8fa6, 0xd4e8ef];
+  var labels = ['FE', 'BE', 'DevOps', 'Design'];
+
+  for(var i = 0; i < 4; i++){
+    var angle = (i / 4) * TAU - TAU / 4;
+    var dist = 100;
+
+    // Node sphere
+    var nodeGeo = new THREE.IcosahedronGeometry(18, 1);
+    var nodeMat = softGlowMaterial(0.5);
+    nodeMat.uniforms.uColor.value = new THREE.Color(colors[i]);
+    var node = new THREE.Mesh(nodeGeo, nodeMat);
+    node.position.set(Math.cos(angle) * dist, Math.sin(angle) * dist, 0);
+    node.userData.orbitAngle = angle;
+    node.userData.orbitDist = dist;
+    node.userData.orbitSpeed = 0.2;
+    group.add(node);
+
+    // Connection line to center
+    var lineGeo = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(Math.cos(angle) * dist, Math.sin(angle) * dist, 0)
+    ]);
+    var lineMat = new THREE.LineBasicMaterial({ color: TEAL, transparent: true, opacity: 0.15 });
+    group.add(new THREE.Line(lineGeo, lineMat));
+  }
+
+  // Center hub
+  var hubGeo = new THREE.OctahedronGeometry(12, 0);
+  var hubMat = softGlowMaterial(0.3);
+  group.add(new THREE.Mesh(hubGeo, hubMat));
+
+  scene.add(group);
+}
+
+/* ── Zone 3: Work — empty frames with glow ────────────────────────────── */
+function buildZone3_Work(small){
+  var group = new THREE.Group();
+  group.name = 'zone3';
+  group.position.set(0, 60, 0);
+
+  for(var i = 0; i < 3; i++){
+    var x = (i - 1) * 180;
+
+    // Frame (box outline)
+    var frameGeo = new THREE.BoxGeometry(130, 100, 4);
+    var edges = new THREE.EdgesGeometry(frameGeo);
+    var frameMat = new THREE.LineBasicMaterial({ color: TEAL, transparent: true, opacity: 0.2 });
+    var frame = new THREE.LineSegments(edges, frameMat);
+    frame.position.set(x, 0, 0);
+    frame.userData.floatPhase = i * 1.2;
+    group.add(frame);
+
+    // Inner glow plane
+    var planeGeo = new THREE.PlaneGeometry(120, 90);
+    var planeMat = softGlowMaterial(0.04);
+    planeMat.uniforms.uColor.value = new THREE.Color(0.3, 0.6, 0.7);
+    var plane = new THREE.Mesh(planeGeo, planeMat);
+    plane.position.set(x, 0, 1);
+    group.add(plane);
+  }
+
+  scene.add(group);
+}
+
+/* ── Zone 4: Blog/Contact — subtle particle field ─────────────────────── */
+function buildZone4_Blog(small){
+  var group = new THREE.Group();
+  group.name = 'zone4';
+  group.position.set(-50, -20, 0);
+
+  // Floating text-like rectangles
+  for(var i = 0; i < (small ? 5 : 10); i++){
+    var w = rand(60, 140), h = rand(8, 16);
+    var lineGeo = new THREE.PlaneGeometry(w, h);
+    var lineMat = new THREE.MeshBasicMaterial({
+      color: TEAL, transparent: true, opacity: rand(0.04, 0.12), side: THREE.DoubleSide
+    });
+    var line = new THREE.Mesh(lineGeo, lineMat);
+    line.position.set(rand(-200, 200), rand(-100, 100), rand(-100, 50));
+    line.userData.floatPhase = rng() * TAU;
+    group.add(line);
+  }
+
+  scene.add(group);
+}
+
+/* ── Ambient particles (always visible) ───────────────────────────────── */
+function buildParticles(small){
+  var COUNT = small ? 800 : 2500;
+  var pos = new Float32Array(COUNT * 3);
+  var seed = new Float32Array(COUNT * 4);
+  for(var i = 0; i < COUNT; i++){
+    pos[i*3]   = (rng() - 0.5) * 3000;
+    pos[i*3+1] = (rng() - 0.5) * 2000;
+    pos[i*3+2] = (rng() - 0.5) * 2000;
+    seed[i*4]   = rng() * TAU;        // phase
+    seed[i*4+1] = 0.2 + rng() * 0.6;  // speed
+    seed[i*4+2] = 0.3 + rng() * 1.0;  // sway
+    seed[i*4+3] = 0.5 + Math.pow(rng(), 2) * 1.5; // size
+  }
+  var geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('seed', new THREE.BufferAttribute(seed, 4));
+
+  var tex = radialTex(64, [[0,'rgba(165,212,226,1)'],[0.35,'rgba(165,212,226,0.4)'],[1,'rgba(165,212,226,0)']]);
+
+  var pts = new THREE.Points(geo, new THREE.ShaderMaterial({
+    uniforms: { uTime: uTime, uMap: { value: tex }, uSize: { value: 7 }, uScale: { value: 400 } },
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: [
+      'attribute vec4 seed;',
+      'uniform float uTime, uSize, uScale;',
+      'varying float vA;',
+      'void main(){',
+      '  vec3 p = position;',
+      '  p.x += sin(uTime * seed.y * 0.3 + seed.x) * 30.0 * seed.z;',
+      '  p.y += mod(uTime * 8.0 * seed.y + seed.x * 50.0, 2000.0) - 1000.0;',
+      '  p.z += cos(uTime * seed.y * 0.25 + seed.x) * 20.0 * seed.z;',
+      '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+      '  gl_PointSize = uSize * seed.w * (uScale / max(-mv.z, 1.0));',
+      '  float edge = 1.0 - abs(p.y) / 1000.0;',
+      '  vA = clamp(edge * 3.0, 0.0, 1.0) * (0.5 + 0.5 * sin(uTime * 1.2 + seed.x * 3.0));',
+      '  gl_Position = projectionMatrix * mv;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'precision highp float;',
+      'uniform sampler2D uMap;',
+      'varying float vA;',
+      'void main(){',
+      '  vec4 t = texture2D(uMap, gl_PointCoord);',
+      '  gl_FragColor = vec4(t.rgb, t.a * vA * 0.4);',
+      '}'
+    ].join('\n')
+  }));
+  pts.frustumCulled = false;
+  scene.add(pts);
+}
+
+/* ── Lighting ─────────────────────────────────────────────────────────── */
+function buildLighting(){
+  var key = new THREE.DirectionalLight(0xd4e8ef, 0.6);
+  key.position.set(-0.3, 0.9, 0.3);
+  scene.add(key);
+
+  var fill = new THREE.DirectionalLight(0x7ab8cc, 0.3);
+  fill.position.set(0.5, -0.5, 0.8);
+  scene.add(fill);
+
+  scene.add(new THREE.AmbientLight(0x1a2a33, 0.4));
+}
+
+/* ── Materials ────────────────────────────────────────────────────────── */
+function softGlowMaterial(opacity){
+  var mat = new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: uTime,
+      uColor: { value: TEAL.clone() },
+      uOpacity: { value: opacity || 0.3 },
+    },
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: [
+      'varying vec3 vN; varying vec3 vW;',
+      'void main(){',
+      '  vN = normalize(normalMatrix * normal);',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vW = wp.xyz;',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'precision highp float;',
+      'uniform vec3 uColor; uniform float uOpacity; uniform float uTime;',
+      'varying vec3 vN; varying vec3 vW;',
+      'void main(){',
+      '  vec3 N = normalize(vN);',
+      '  vec3 V = normalize(cameraPosition - vW);',
+      '  float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);',
+      '  float pulse = 0.85 + 0.15 * sin(uTime * 0.6 + vW.y * 0.01);',
+      '  vec3 col = uColor * pulse + vec3(0.4, 0.7, 0.9) * fresnel * 0.3;',
+      '  gl_FragColor = vec4(col, uOpacity * (0.6 + 0.4 * fresnel));',
+      '}'
+    ].join('\n')
+  });
+  return mat;
+}
+
+function ringShaderMaterial(){
+  return new THREE.ShaderMaterial({
+    uniforms: { uTime: uTime },
+    transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: [
+      'varying vec3 vW; varying float vAngle;',
+      'void main(){',
+      '  vAngle = atan(position.z, position.x);',
+      '  vec4 wp = modelMatrix * vec4(position, 1.0);',
+      '  vW = wp.xyz;',
+      '  gl_Position = projectionMatrix * viewMatrix * wp;',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'precision highp float;',
+      'uniform float uTime;',
+      'varying vec3 vW; varying float vAngle;',
+      'void main(){',
+      '  float wave = 0.5 + 0.5 * sin(vAngle * 4.0 + uTime * 1.2);',
+      '  vec3 col = mix(vec3(0.478,0.722,0.800), vec3(0.647,0.831,0.886), wave);',
+      '  gl_FragColor = vec4(col, 0.25 + 0.15 * wave);',
+      '}'
+    ].join('\n')
+  });
+}
+
+function radialTex(size, stops){
+  var c = document.createElement('canvas'); c.width = c.height = size;
+  var g = c.getContext('2d');
+  var grad = g.createRadialGradient(size/2,size/2,0,size/2,size/2,size/2);
+  stops.forEach(function(s){ grad.addColorStop(s[0],s[1]); });
+  g.fillStyle = grad; g.fillRect(0,0,size,size);
+  var t = new THREE.CanvasTexture(c);
+  t.minFilter = THREE.LinearFilter;
+  return t;
+}
+
+/* ── Render frame ─────────────────────────────────────────────────────── */
+var camPos = new THREE.Vector3(0, 0, 1400);
+var camLook = new THREE.Vector3(0, 0, 0);
+var targetPos = new THREE.Vector3();
+var targetLook = new THREE.Vector3();
+
+function renderFrame(){
+  var dt = clock.getDelta();
+  uTime.value += dt;
+
+  var scroll = uScroll.value;
+  var totalZones = ZONES.length;
+
+  // Determine which zone we're in and blend
+  var raw = scroll * (totalZones - 1);
+  var zoneIdx = Math.floor(raw);
+  var blend = raw - zoneIdx;
+  zoneIdx = Math.min(zoneIdx, totalZones - 2);
+
+  // Interpolate camera position
+  var z0 = ZONES[zoneIdx], z1 = ZONES[zoneIdx + 1];
+  targetPos.set(
+    z0.pos[0] + (z1.pos[0] - z0.pos[0]) * blend,
+    z0.pos[1] + (z1.pos[1] - z0.pos[1]) * blend,
+    z0.pos[2] + (z1.pos[2] - z0.pos[2]) * blend
+  );
+  targetLook.set(
+    z0.look[0] + (z1.look[0] - z0.look[0]) * blend,
+    z0.look[1] + (z1.look[1] - z0.look[1]) * blend,
+    z0.look[2] + (z1.look[2] - z0.look[2]) * blend
+  );
+
+  // Smooth camera
+  camPos.lerp(targetPos, 0.04);
+  camLook.lerp(targetLook, 0.04);
+  camera.position.copy(camPos);
+  camera.lookAt(camLook);
+
+  // Animate zone groups
+  scene.children.forEach(function(child){
+    if(!child.name || !child.name.startsWith('zone')) return;
+
+    var zoneNum = parseInt(child.name.replace('zone', ''));
+    var dist = Math.abs(scroll * (totalZones - 1) - zoneNum);
+    var visibility = Math.max(0, 1 - dist * 1.5);
+
+    child.children.forEach(function(obj){
+      // Fade based on distance from current zone
+      if(obj.material && obj.material.uniforms && obj.material.uniforms.uOpacity){
+        var base = obj.material.uniforms.uOpacity._base || obj.material.uniforms.uOpacity.value;
+        if(!obj.material.uniforms.uOpacity._base) obj.material.uniforms.uOpacity._base = base;
+        obj.material.uniforms.uOpacity.value = base * visibility;
+      }
+      if(obj.material && obj.material.opacity !== undefined && !obj.material.uniforms){
+        obj.material.opacity = (obj.material._baseOpacity || obj.material.opacity) * visibility;
+        if(!obj.material._baseOpacity) obj.material._baseOpacity = obj.material.opacity / visibility || 0.1;
+      }
+
+      // Gentle rotation
+      if(obj.userData.rotSpeed){
+        obj.rotation.y += dt * obj.userData.rotSpeed;
+      }
+
+      // Float animation
+      if(obj.userData.phase !== undefined){
+        obj.position.y = (obj.userData.baseY || obj.position.y) + Math.sin(uTime.value * (obj.userData.speed || 0.5) + obj.userData.phase) * 12;
+      }
+
+      // Orbit animation (for skills nodes and about dots)
+      if(obj.userData.orbit){
+        var o = obj.userData.orbit;
+        o.theta += dt * o.speed;
+        obj.position.set(o.r * Math.sin(o.phi) * Math.cos(o.theta), o.r * Math.cos(o.phi), o.r * Math.sin(o.phi) * Math.sin(o.theta));
+      }
+      if(obj.userData.orbitAngle !== undefined){
+        obj.userData.orbitAngle += dt * obj.userData.orbitSpeed;
+        var a = obj.userData.orbitAngle;
+        var d = obj.userData.orbitDist;
+        obj.position.set(Math.cos(a) * d, Math.sin(a) * d, 0);
+      }
+    });
+  });
+
+  renderer.render(scene, camera);
+}
+
+/* ── Dock interactions ────────────────────────────────────────────────── */
+var DOCK = { root: null, items: [], u: 1 };
+var SPEC = { items: [] };
+var aimX = 0, aimY = 0, aimSeen = false;
+
+function clamp01(x){ return x < 0 ? 0 : x > 1 ? 1 : x; }
+
+function initDock(){
+  var root = document.getElementById('dock');
+  if(!root) return;
+  DOCK.root = root;
+  DOCK.items = [].map.call(root.querySelectorAll('[data-dock]'), function(el){
+    return { el: el, w: 0, h: 0, v: 0, vel: 0, target: 0 };
+  });
+  SPEC.items = [].map.call(root.querySelectorAll('[data-spec]'), function(el){
+    return { el: el, ang: 2.4, tAng: 2.4, br: 0, tBr: 0 };
+  });
+
+  measureDock();
+  window.addEventListener('resize', measureDock);
+
+  window.addEventListener('pointermove', function(e){
+    if(e.pointerType === 'touch') return;
+    aimX = e.clientX; aimY = e.clientY; aimSeen = true;
+  }, { passive: true });
+  window.addEventListener('pointerleave', function(){ aimSeen = false; });
+
+  // Active section tracking
+  var sections = document.querySelectorAll('.hero, .section');
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        var id = entry.target.id;
+        DOCK.items.forEach(function(st){
+          var href = st.el.getAttribute('href');
+          if(href === '#' + id){
+            st.el.classList.add('is-active');
+          } else if(!st.el.classList.contains('dock-mark')){
+            st.el.classList.remove('is-active');
+          }
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  sections.forEach(function(s){ observer.observe(s); });
+
+  // Smooth scroll on click
+  root.addEventListener('click', function(e){
+    var item = e.target.closest('[data-dock]');
+    if(!item) return;
+    e.preventDefault();
+    var href = item.getAttribute('href');
+    if(href && href.startsWith('#')){
+      var target = document.getElementById(href.slice(1));
+      if(target) target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  // Animation loop for dock
+  (function dockLoop(){
+    requestAnimationFrame(dockLoop);
+    drawDock();
+    drawSpec();
+  })();
+}
+
+function measureDock(){
+  if(!DOCK.root) return;
+  DOCK.u = 1;
+  DOCK.items.forEach(function(st){
+    st.el.style.width = st.el.style.height = st.el.style.transform = '';
+    st.el.dataset.near = 'false';
+    st.v = st.vel = st.target = 0;
+  });
+  DOCK.items.forEach(function(st){
+    var r = st.el.getBoundingClientRect();
+    st.w = r.width; st.h = r.height;
+  });
+}
+
+function drawDock(){
+  if(!DOCK.root || !aimSeen){
+    DOCK.items.forEach(function(st){
+      st.target = 0;
+      st.vel += (st.target - st.v) * 120 * 0.016;
+      st.vel *= 0.7;
+      st.v += st.vel * 0.016;
+      if(Math.abs(st.v) > 0.001){
+        applyDockSize(st);
+      }
+    });
+    return;
+  }
+  var rr = DOCK.root.getBoundingClientRect();
+  if(aimX < rr.left - 60 || aimX > rr.right + 60 || aimY < rr.top - 50 || aimY > rr.bottom + 120){
+    DOCK.items.forEach(function(st){ st.target = 0; st.el.dataset.near = 'false'; });
+    return;
+  }
+  DOCK.items.forEach(function(st){
+    var r = st.el.getBoundingClientRect();
+    var prox = clamp01(1 - Math.abs(aimX - (r.left + r.width * 0.5)) / 130);
+    st.target = prox * prox * (3 - 2 * prox);
+    st.el.dataset.near = st.target > 0.08 ? 'true' : 'false';
+  });
+
+  DOCK.items.forEach(function(st){
+    st.vel += (st.target - st.v) * 190 * 0.016;
+    st.vel *= Math.exp(-23 * 0.016);
+    st.v += st.vel * 0.016;
+    applyDockSize(st);
+  });
+}
+
+function applyDockSize(st){
+  var v = clamp01(st.v);
+  var mark = st.el.classList.contains('dock-mark');
+  var ew = mark ? 14 : Math.min(18, st.w * 0.24);
+  var eh = mark ? 14 : 16;
+  st.el.style.width = (st.w + ew * v).toFixed(1) + 'px';
+  st.el.style.height = (st.h + eh * v).toFixed(1) + 'px';
+  st.el.style.transform = 'translateY(' + (v * 3.5).toFixed(1) + 'px)';
+}
+
+function drawSpec(){
+  if(!aimSeen){
+    SPEC.items.forEach(function(st){
+      st.br += (0 - st.br) * 0.1;
+      if(st.br > 0.001){
+        st.el.style.setProperty('--spec-bright', (st.br * 0.92).toFixed(3));
+      }
+    });
+    return;
+  }
+  SPEC.items.forEach(function(st){
+    var r = st.el.getBoundingClientRect();
+    var cx = r.left + r.width * 0.5, cy = r.top + r.height * 0.5;
+    st.tAng = Math.atan2(cy - aimY, aimX - cx);
+    var dx = Math.max(r.left - aimX, 0, aimX - r.right);
+    var dy = Math.max(r.top - aimY, 0, aimY - r.bottom);
+    var d = Math.sqrt(dx * dx + dy * dy);
+    var raw = clamp01(1 - d / 250);
+    st.tBr = raw * raw * (3 - 2 * raw);
+
+    var diff = ((st.tAng - st.ang + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+    st.ang += diff * 0.12;
+    st.br += (st.tBr - st.br) * 0.1;
+    st.el.style.setProperty('--spec-angle', st.ang.toFixed(3) + 'rad');
+    st.el.style.setProperty('--spec-bright', (st.br * 0.92).toFixed(3));
+  });
+}
+
+/* ── Reveal animations ────────────────────────────────────────────────── */
+function initReveals(){
+  var reveals = document.querySelectorAll('.reveal');
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+  reveals.forEach(function(el){ observer.observe(el); });
+}
+
+/* ── Init ─────────────────────────────────────────────────────────────── */
+if(!window.THREE){
+  document.body.classList.add('is-loaded');
+  initReveals();
+  initDock();
+} else {
+  build();
+  initDock();
+  initReveals();
+}
+
+/* ── i18n ───────────────────────────────────────────────────────────── */
+var I18N = {
+  zh: {
+    'nav.about': '关于', 'nav.skills': '技能', 'nav.work': '作品',
+    'nav.blog': '博客', 'nav.contact': '联系',
+    'hero.label': '你好，我是', 'hero.name': '陈维',
+    'hero.role': '资深全栈工程师，专注于构建沉浸式数字体验。六年经验，打造用户真正喜欢的产品。',
+    'hero.cta': '查看作品', 'hero.scroll': 'Scroll',
+    'about.label': '关于我', 'about.title': '我做的东西，<span>会呼吸</span>。',
+    'about.p1': '31 岁，坐标深圳，全栈工程师。我专注于构建兼具技术严谨与工艺美感的 Web 应用——每一个像素、每一帧动画、每一次 API 响应，都应该是有意为之。',
+    'about.p2': '过去六年，我在金融科技、电商和创意工具领域交付了多个产品。我关心性能、可访问性，以及那些区分「能用」和「好用」的微小细节。',
+    'about.p3': '不写代码的时候，大概在画 UI 草图、折腾 WebGL，或者手冲一杯咖啡。',
+    'about.stat1.label': '工作经验', 'about.stat2.label': '交付项目', 'about.stat3.label': '每日咖啡',
+    'skills.label': '技能', 'skills.title': '我能带来什么。',
+    'skills.fe.title': '前端工程', 'skills.fe.desc': '像素级精准的界面实现，精通性能优化、动画系统与无障碍访问。用现代框架构建流畅的用户体验。',
+    'skills.be.title': '后端与系统', 'skills.be.desc': '可扩展的 API、微服务架构与数据管道。我设计能扛住真实流量的系统，从容不迫。',
+    'skills.devops.title': 'DevOps & 云', 'skills.devops.desc': 'CI/CD 流水线、容器编排与基础设施即代码。快速、可靠地交付。',
+    'skills.design.title': '设计 & UX', 'skills.design.desc': '连接设计与工程的桥梁。用系统思维思考，用代码原型验证，执着于交互之间的每一个瞬间。',
+    'work.label': '精选作品', 'work.title': '项目展示。',
+    'work.card1': '下一个项目<br>即将上线…', 'work.card2': '正在酝酿<br>一些有趣的东西', 'work.card3': '敬请<br>期待', 'work.coming': '即将呈现',
+    'blog.label': '博客', 'blog.title': '思考与记录。',
+    'blog.post1.title': '我为什么用三周重写了整个前端', 'blog.post1.desc': '一个关于技术债、果断决策和性能提升的故事。以及那份说服管理层的 Excel 表格。', 'blog.post1.tag': '工程',
+    'blog.post2.title': '有意义的动画：让界面活起来的艺术', 'blog.post2.desc': '不是所有动画都生而平等。如何用运动引导注意力、传递状态、让界面有人味——同时不让人头晕。', 'blog.post2.tag': '设计',
+    'blog.post3.title': '构建实时协作引擎', 'blog.post3.desc': 'CRDT、Operational Transform，以及让多个光标和谐共处的混乱现实。我们从零构建中学到了什么。', 'blog.post3.tag': '系统',
+    'blog.post4.title': '手冲咖啡与代码审查', 'blog.post4.desc': '做咖啡教会我的事：耐心、流程、关注细节。一个略显矫情但确实成立的类比。', 'blog.post4.tag': '生活',
+    'contact.title': '一起做点<br>有意思的事。',
+    'contact.desc': '我对有趣的对话、合作机会始终敞开大门。或者，一边喝咖啡一边聊聊 Web 性能优化也行。',
+    'footer': '<a href="https://github.com/znuaibot/portfolio" style="color:inherit;text-decoration:none;">© 2026 陈维</a> · 用 Three.js 精心构建',
+    'lang': 'EN'
+  },
+  en: {
+    'nav.about': 'About', 'nav.skills': 'Skills', 'nav.work': 'Work',
+    'nav.blog': 'Blog', 'nav.contact': 'Contact',
+    'hero.label': "Hello, I'm",
+    'hero.name': 'Chen Wei',
+    'hero.role': 'Senior full-stack engineer crafting immersive digital experiences. 6 years of building products that people actually enjoy using.',
+    'hero.cta': 'View my work', 'hero.scroll': 'Scroll',
+    'about.label': 'About Me', 'about.title': 'I build things that <span>feel alive</span>.',
+    'about.p1': "I'm a 31-year-old full-stack engineer based in Shenzhen. I specialize in building web applications that combine technical rigor with genuine craft — the kind of software where every pixel, every animation, every API response feels intentional.",
+    'about.p2': "Over the past 6 years, I've shipped products across fintech, e-commerce, and creative tools. I care about performance, accessibility, and the small details that separate good software from great software.",
+    'about.p3': "When I'm not coding, I'm probably sketching UI concepts, experimenting with WebGL, or brewing pour-over coffee.",
+    'about.stat1.label': 'Experience', 'about.stat2.label': 'Projects', 'about.stat3.label': 'Coffee/day',
+    'skills.label': 'Skills', 'skills.title': 'What I bring to the table.',
+    'skills.fe.title': 'Frontend Engineering', 'skills.fe.desc': 'Pixel-perfect interfaces with modern frameworks. Deep expertise in performance optimization, animation systems, and accessibility.',
+    'skills.be.title': 'Backend & Systems', 'skills.be.desc': "Scalable APIs, microservices, and data pipelines. I design systems that handle real-world load without breaking a sweat.",
+    'skills.devops.title': 'DevOps & Cloud', 'skills.devops.desc': 'CI/CD pipelines, container orchestration, and infrastructure as code. Shipping fast and reliably.',
+    'skills.design.title': 'Design & UX', 'skills.design.desc': 'Bridging design and engineering. I think in systems, prototype in code, and obsess over the moments between interactions.',
+    'work.label': 'Featured Work', 'work.title': 'Selected projects.',
+    'work.card1': 'Next project<br>loading soon…', 'work.card2': 'Something<br>exciting brewing', 'work.card3': 'Stay<br>tuned', 'work.coming': 'Coming Soon',
+    'blog.label': 'Blog', 'blog.title': 'Thoughts & notes.',
+    'blog.post1.title': 'Why I Rewrote Our Frontend in Three Weeks', 'blog.post1.desc': 'A story about technical debt, brave decisions, and the performance gains that made it all worth it. Plus the spreadsheet that convinced management.', 'blog.post1.tag': 'Engineering',
+    'blog.post2.title': 'The Art of Meaningful Animations', 'blog.post2.desc': 'Not all animations are created equal. How to use motion to guide attention, convey state, and make interfaces feel human — without making people nauseous.', 'blog.post2.tag': 'Design',
+    'blog.post3.title': 'Building a Real-Time Collaboration Engine', 'blog.post3.desc': 'CRDTs, operational transforms, and the messy reality of making multiple cursors play nicely. What we learned building our own from scratch.', 'blog.post3.tag': 'Systems',
+    'blog.post4.title': 'Pour-Over Coffee and Code Reviews', 'blog.post4.desc': "What making coffee taught me about patience, process, and paying attention to details. A slightly pretentious analogy that actually holds up.", 'blog.post4.tag': 'Life',
+    'contact.title': "Let's build something<br>together.",
+    'contact.desc': "I'm always open to interesting conversations, collaboration opportunities, or just geeking out about web performance over coffee.",
+    'footer': '<a href="https://github.com/znuaibot/portfolio" style="color:inherit;text-decoration:none;">© 2026 Chen Wei</a> · Built with care and Three.js',
+    'lang': '中'
+  }
+};
+var currentLang = localStorage.getItem('lang') || 'zh';
+
+function setLang(lang){
+  currentLang = lang;
+  localStorage.setItem('lang', lang);
+  var dict = I18N[lang];
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    if(dict[key] !== undefined) el.innerHTML = dict[key];
+  });
+  // Update nav labels
+  var navKeys = ['about','skills','work','blog','contact'];
+  var navEls = document.querySelectorAll('.dock-item:not(.dock-mark):not(#lang-toggle) span:not(.ico)');
+  navEls.forEach(function(el, i){
+    if(navKeys[i] && dict['nav.' + navKeys[i]]) el.textContent = dict['nav.' + navKeys[i]];
+  });
+  // Update toggle button
+  var toggle = document.getElementById('lang-toggle');
+  if(toggle) toggle.querySelector('span').textContent = dict['lang'];
+  // Update html lang attr
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+}
+
+// Init
+document.getElementById('lang-toggle').addEventListener('click', function(){
+  setLang(currentLang === 'zh' ? 'en' : 'zh');
+});
+setLang(currentLang);
+
+})();
+</script>
+</body>
+</html>
