@@ -388,6 +388,73 @@
     border:1px dashed rgba(122,184,204,.05);
   }
 
+  /* ── Featured work card ───────────────────────────────────────────── */
+  .work-card-featured{
+    aspect-ratio:4/3;
+    border-radius:24px;
+    border:1px solid rgba(122,184,204,.2);
+    overflow:hidden;
+    position:relative;
+    cursor:pointer;
+    transition:transform .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease);
+    text-decoration:none; color:inherit;
+    display:block;
+  }
+  .work-card-featured .fc-img{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    transition:transform .7s var(--ease);
+  }
+  .work-card-featured .fc-overlay{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(26,42,51,.15) 0%, rgba(26,42,51,.5) 52%, rgba(26,42,51,.93) 100%);
+  }
+  .work-card-featured:hover{
+    border-color:rgba(122,184,204,.5);
+    transform:translateY(-4px);
+    box-shadow:0 20px 54px rgba(0,0,0,.42);
+  }
+  .work-card-featured:hover .fc-img{ transform:scale(1.06); }
+  .work-card-featured .fc-badge{
+    position:absolute; top:18px; left:18px; z-index:2;
+    font-size:10px; letter-spacing:2px; text-transform:uppercase;
+    color:var(--teal-light);
+    background:rgba(26,42,51,.72);
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    padding:5px 11px; border-radius:7px;
+    border:1px solid rgba(122,184,204,.22);
+  }
+  .work-card-featured .fc-content{
+    position:absolute; left:0; right:0; bottom:0; z-index:2;
+    padding:24px 26px;
+  }
+  .work-card-featured .fc-tag{
+    display:inline-block;
+    font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--teal-light);
+    background:rgba(122,184,204,.14);
+    border:1px solid rgba(122,184,204,.25);
+    padding:4px 10px; border-radius:6px;
+    margin-bottom:12px;
+  }
+  .work-card-featured .fc-title{
+    font-size:20px; font-weight:400; line-height:1.25; margin-bottom:8px;
+  }
+  .work-card-featured .fc-desc{
+    font-size:12.5px; line-height:1.6; color:var(--ink-soft); margin-bottom:14px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .work-card-featured .fc-link{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:12px; letter-spacing:.5px; color:var(--teal-light);
+  }
+  .work-card-featured .fc-link svg{
+    width:14px; height:14px; fill:none; stroke:currentColor;
+    stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;
+    transition:transform .3s var(--ease);
+  }
+  .work-card-featured:hover .fc-link svg{ transform:translateX(4px); }
+
   /* ── Blog section ─────────────────────────────────────────────────── */
   .blog-list{ display:flex; flex-direction:column; gap:0; }
   .blog-entry{
@@ -642,12 +709,17 @@
         <h2 data-i18n="work.title">项目展示。</h2>
       </div>
       <div class="work-grid">
-        <div class="work-card reveal reveal-d1">
-          <div class="geo-accent"></div>
-          <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
-          <p class="placeholder-text" data-i18n="work.card1">下一个项目<br>即将上线…</p>
-          <span class="coming" data-i18n="work.coming">即将呈现</span>
-        </div>
+        <a class="work-card-featured reveal reveal-d1" href="https://creek-oak-791.faces.site/7v83t6wc0d54" target="_blank" rel="noopener">
+          <div class="fc-img" style="background-image:url('https://d6yvfl55smr7u.cloudfront.net/assets/tz9i847f-1787188990986-generated-image.png')"></div>
+          <div class="fc-overlay"></div>
+          <span class="fc-badge" data-i18n="work.featured.badge">精选</span>
+          <div class="fc-content">
+            <span class="fc-tag" data-i18n="work.featured.tag">Lo-fi · 独立企划</span>
+            <h3 class="fc-title" data-i18n="work.featured.title">Z世代Lo-fi心路创作</h3>
+            <p class="fc-desc" data-i18n="work.featured.desc">一粒尘埃里装得下整个时代。从地铁末班车的一次呼吸开始，四个视角，同一件事，一首 Lo-fi。</p>
+            <span class="fc-link"><span data-i18n="work.featured.link">查看作品</span><svg viewBox="0 0 24 24"><path d="M7 17l9.2-9.2M7 7h10v10"/></svg></span>
+          </div>
+        </a>
         <div class="work-card reveal reveal-d2">
           <div class="geo-accent"></div>
           <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>
@@ -1439,6 +1511,7 @@ var I18N = {
     'skills.design.title': '设计 & UX', 'skills.design.desc': '连接设计与工程的桥梁。用系统思维思考，用代码原型验证，执着于交互之间的每一个瞬间。',
     'work.label': '精选作品', 'work.title': '项目展示。',
     'work.card1': '下一个项目<br>即将上线…', 'work.card2': '正在酝酿<br>一些有趣的东西', 'work.card3': '敬请<br>期待', 'work.coming': '即将呈现',
+    'work.featured.badge': '精选', 'work.featured.tag': 'Lo-fi · 独立企划', 'work.featured.title': 'Z世代Lo-fi心路创作', 'work.featured.desc': '一粒尘埃里装得下整个时代。从地铁末班车的一次呼吸开始，四个视角，同一件事，一首 Lo-fi。', 'work.featured.link': '查看作品',
     'blog.label': '博客', 'blog.title': '思考与记录。',
     'blog.post1.title': '我为什么用三周重写了整个前端', 'blog.post1.desc': '一个关于技术债、果断决策和性能提升的故事。以及那份说服管理层的 Excel 表格。', 'blog.post1.tag': '工程',
     'blog.post2.title': '有意义的动画：让界面活起来的艺术', 'blog.post2.desc': '不是所有动画都生而平等。如何用运动引导注意力、传递状态、让界面有人味——同时不让人头晕。', 'blog.post2.tag': '设计',
@@ -1468,6 +1541,7 @@ var I18N = {
     'skills.design.title': 'Design & UX', 'skills.design.desc': 'Bridging design and engineering. I think in systems, prototype in code, and obsess over the moments between interactions.',
     'work.label': 'Featured Work', 'work.title': 'Selected projects.',
     'work.card1': 'Next project<br>loading soon…', 'work.card2': 'Something<br>exciting brewing', 'work.card3': 'Stay<br>tuned', 'work.coming': 'Coming Soon',
+    'work.featured.badge': 'Featured', 'work.featured.tag': 'Lo-fi · Indie', 'work.featured.title': 'Gen-Z Lo-fi Inner Journey', 'work.featured.desc': 'A whole era fits in a speck of dust. From a single breath on the last subway — four perspectives, one thing, one Lo-fi track.', 'work.featured.link': 'View project',
     'blog.label': 'Blog', 'blog.title': 'Thoughts & notes.',
     'blog.post1.title': 'Why I Rewrote Our Frontend in Three Weeks', 'blog.post1.desc': 'A story about technical debt, brave decisions, and the performance gains that made it all worth it. Plus the spreadsheet that convinced management.', 'blog.post1.tag': 'Engineering',
     'blog.post2.title': 'The Art of Meaningful Animations', 'blog.post2.desc': 'Not all animations are created equal. How to use motion to guide attention, convey state, and make interfaces feel human — without making people nauseous.', 'blog.post2.tag': 'Design',
